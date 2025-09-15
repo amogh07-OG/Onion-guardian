@@ -71,7 +71,7 @@
             This is a prototype app. Click "Connect" to begin the simulation and see live data.
           </p>
           <button id="connect-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
-            Connect to Unit
+            Connect 
           </button>
         </div>
 
@@ -147,7 +147,6 @@
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        console.log("DOM content loaded. Script is running.");
         // Initial state of the simulated data
         let data = {
           temperature: 4.0,
@@ -163,8 +162,8 @@
         let sensorInterval;
         let ventTimer;
 
-        // Gases harmful to onions
-        const harmfulGases = ['Ethylene', 'Ammonia', 'Sulfur Dioxide'];
+        // Gases harmful to onions, now including Ethylene and Ammonia
+        const harmfulGases = ['Ethylene', 'Ammonia'];
 
         const connectScreen = document.getElementById('connect-screen');
         const dashboard = document.getElementById('dashboard');
@@ -307,15 +306,14 @@
 
         // Handle the "Connect" button click
         const handleConnect = () => {
-          console.log("Connect button clicked.");
           if (isConnected) return;
           isConnected = true;
           connectScreen.classList.add('hidden');
           dashboard.classList.remove('hidden');
           dashboard.classList.add('grid');
           addNotification('Connected to Onion Storage Unit. Live data streaming...');
-          // Start the sensor data simulation loop
-          sensorInterval = setInterval(simulateSensorData, 3000);
+          // Start the sensor data simulation loop, now running every 10 seconds
+          sensorInterval = setInterval(simulateSensorData, 10000);
         };
 
         // Add event listeners
