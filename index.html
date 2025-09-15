@@ -101,21 +101,17 @@
           <div class="bg-green-50 p-6 rounded-xl shadow-md space-y-4">
             <h2 class="text-2xl font-semibold text-green-800">System Status & Simulation</h2>
             <div id="unit-simulation" class="relative w-full h-80 bg-gray-100 rounded-lg overflow-hidden shadow-inner">
-              <!-- Animated yellow box to simulate the unit -->
               <div class="absolute inset-0 flex items-center justify-center">
                 <div class="w-1/2 h-full bg-white border-8 border-yellow-400 rounded-lg shadow-xl"></div>
               </div>
-              <!-- Internal grey blocks for visual effect -->
               <div class="absolute inset-0 flex flex-col justify-around p-4">
                 <div class="h-16 bg-gray-300 rounded-md shadow-md"></div>
                 <div class="h-16 bg-gray-300 rounded-md shadow-md"></div>
                 <div class="h-16 bg-gray-300 rounded-md shadow-md"></div>
               </div>
-              <!-- Red overlay for defect detection -->
               <div id="anomaly-highlight" class="absolute inset-0 flex items-center justify-center bg-red-500 opacity-0 rounded-lg transition-opacity duration-500"></div>
             </div>
 
-            <!-- Vent Control Section -->
             <div class="bg-gray-100 p-4 rounded-lg flex items-center justify-between">
                 <span class="font-medium text-gray-700">Automatic Venting</span>
                 <label class="toggle-switch">
@@ -184,14 +180,14 @@
 
         // Function to update the user interface based on the current data state
         const updateUI = () => {
-          tempDisplay.textContent = ${data.temperature}°C;
-          humidityDisplay.textContent = ${data.humidity}%;
+          tempDisplay.textContent = `${data.temperature}°C`;
+          humidityDisplay.textContent = `${data.humidity}%`;
           
           airQualityDisplay.textContent = data.airQuality;
-          airQualityDisplay.className = text-3xl font-bold mt-1 ${data.airQuality === 'Good' ? 'text-green-500' : 'text-red-500'};
+          airQualityDisplay.className = `text-3xl font-bold mt-1 ${data.airQuality === 'Good' ? 'text-green-500' : 'text-red-500'}`;
 
           gasDisplay.textContent = data.gasType;
-          gasDisplay.className = text-3xl font-bold mt-1 ${data.gasType === 'None' ? 'text-green-500' : 'text-red-500'};
+          gasDisplay.className = `text-3xl font-bold mt-1 ${data.gasType === 'None' ? 'text-green-500' : 'text-red-500'}`;
           
           // Animate the anomaly highlight if a defect is detected
           if (data.defectDetected) {
@@ -222,7 +218,7 @@
         const addNotification = (message, isError = false) => {
           const alertDiv = document.createElement('div');
           const colorClass = isError ? 'bg-red-100 border-red-500 text-red-700' : 'bg-green-100 border-green-500 text-green-700';
-          alertDiv.className = border-l-4 p-2 rounded-md text-sm ${colorClass};
+          alertDiv.className = `border-l-4 p-2 rounded-md text-sm ${colorClass}`;
           alertDiv.textContent = message;
           alertsContainer.prepend(alertDiv);
           // Keep a maximum of 5 alerts visible
@@ -283,7 +279,7 @@
             newNotification = 'WARNING: Humidity is too high!';
           } else if (newGasType !== 'None') {
             newDefectDetected = true;
-            newNotification = ALERT: Harmful gas detected: ${newGasType}!;
+            newNotification = `ALERT: Harmful gas detected: ${newGasType}!`;
           }
 
           // Update the main data object
