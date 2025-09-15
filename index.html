@@ -147,6 +147,7 @@
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOM content loaded. Script is running.");
         // Initial state of the simulated data
         let data = {
           temperature: 4.0,
@@ -306,6 +307,7 @@
 
         // Handle the "Connect" button click
         const handleConnect = () => {
+          console.log("Connect button clicked.");
           if (isConnected) return;
           isConnected = true;
           connectScreen.classList.add('hidden');
