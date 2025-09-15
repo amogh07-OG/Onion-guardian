@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onion Storage Guardian Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #22c55e;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body class="bg-gray-200">
+
+    <div id="root" class="flex flex-col items-center justify-center min-h-screen p-4 font-sans antialiased">
+      <div class="w-full max-w-4xl bg-white p-6 rounded-2xl shadow-xl space-y-8">
+        <header class="text-center">
+          <h1 class="text-4xl font-bold text-gray-800">Onion Storage Guardian Prototype</h1>
+          <p class="text-gray-500 mt-2">Simulated monitoring interface</p>
+        </header>
+
+        <div id="connect-screen" class="text-center p-8 border-2 border-dashed border-gray-300 rounded-xl space-y-4">
+          <p class="text-lg text-gray-600">
+            This is a prototype app. Click "Connect" to begin the simulation and see live data.
+          </p>
+          <button id="connect-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
+            Connect to Unit
+          </button>
+        </div>
+
+        <div id="dashboard" class="hidden grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-blue-50 p-6 rounded-xl shadow-md space-y-4">
+            <h2 class="text-2xl font-semibold text-blue-800">Environmental Conditions</h2>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-white p-4 rounded-xl shadow-inner text-center">
+                <p class="text-sm text-gray-500">Temperature</p>
+                <p id="temp-display" class="text-4xl font-bold text-blue-600 mt-1">--°C</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-inner text-center">
+                <p class="text-sm text-gray-500">Humidity</p>
+                <p id="humidity-display" class="text-4xl font-bold text-blue-600 mt-1">--%</p>
+              </div>
+              <div class="col-span-2 bg-white p-4 rounded-xl shadow-inner text-center">
+                <p class="text-sm text-gray-500">Air Quality</p>
+                <p id="air-quality-display" class="text-3xl font-bold mt-1 text-gray-500">--</p>
+              </div>
+              <div class="col-span-2 bg-white p-4 rounded-xl shadow-inner text-center">
+                <p class="text-sm text-gray-500">Gas Presence</p>
+                <p id="gas-display" class="text-3xl font-bold mt-1 text-gray-500">--</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-green-50 p-6 rounded-xl shadow-md space-y-4">
+            <h2 class="text-2xl font-semibold text-green-800">System Status & Simulation</h2>
+            <div id="unit-simulation" class="relative w-full h-80 bg-gray-100 rounded-lg overflow-hidden shadow-inner">
+              <!-- Animated yellow box to simulate the unit -->
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-1/2 h-full bg-white border-8 border-yellow-400 rounded-lg shadow-xl"></div>
+              </div>
+              <!-- Internal grey blocks for visual effect -->
+              <div class="absolute inset-0 flex flex-col justify-around p-4">
+                <div class="h-16 bg-gray-300 rounded-md shadow-md"></div>
+                <div class="h-16 bg-gray-300 rounded-md shadow-md"></div>
+                <div class="h-16 bg-gray-300 rounded-md shadow-md"></div>
+              </div>
+              <!-- Red overlay for defect detection -->
+              <div id="anomaly-highlight" class="absolute inset-0 flex items-center justify-center bg-red-500 opacity-0 rounded-lg transition-opacity duration-500"></div>
+            </div>
+
+            <!-- Vent Control Section -->
+            <div class="bg-gray-100 p-4 rounded-lg flex items-center justify-between">
+                <span class="font-medium text-gray-700">Automatic Venting</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="auto-vent-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="flex space-x-4">
+                <button id="open-vents-button" class="w-1/2 py-3 rounded-lg font-bold text-white transition-colors duration-200 bg-gray-400 cursor-not-allowed">
+                    Open Vents
+                </button>
+                <button id="close-vents-button" class="w-1/2 py-3 rounded-lg font-bold text-white transition-colors duration-200 bg-gray-400 cursor-not-allowed">
+                    Close Vents
+                </button>
+            </div>
+
+            <div class="space-y-2">
+              <h3 class="text-lg font-medium">System Alerts</h3>
+              <div id="alerts-container">
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-2 rounded-md text-sm">
+                  All systems are operating normally.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="text-center text-gray-400 text-sm mt-8">
+          <p>© 2025 Onion Storage Guardian. All rights reserved.</p>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // Initial state of the simulated data
+        let data = {
+          temperature: 4.0,
+          humidity: 65,
+          gasType: 'None', 
+          airQuality: 'Good',
+          defectDetected: false,
+        };
+
+        let isConnected = false;
+        let isVentOpen = false;
+        let isAutomaticVenting = false;
+        let sensorInterval;
+        let ventTimer;
+
+        // Gases harmful to onions
+        const harmfulGases = ['Ethylene', 'Ammonia', 'Sulfur Dioxide'];
+
+        const connectScreen = document.getElementById('connect-screen');
+        const dashboard = document.getElementById('dashboard');
+        const connectButton = document.getElementById('connect-button');
+        const openVentsButton = document.getElementById('open-vents-button');
+        const closeVentsButton = document.getElementById('close-vents-button');
+        const autoVentToggle = document.getElementById('auto-vent-toggle');
+        const tempDisplay = document.getElementById('temp-display');
+        const humidityDisplay = document.getElementById('humidity-display');
+        const airQualityDisplay = document.getElementById('air-quality-display');
+        const gasDisplay = document.getElementById('gas-display');
+        const anomalyHighlight = document.getElementById('anomaly-highlight');
+        const alertsContainer = document.getElementById('alerts-container');
+
+        // Function to update the user interface based on the current data state
+        const updateUI = () => {
+          tempDisplay.textContent = ${data.temperature}°C;
+          humidityDisplay.textContent = ${data.humidity}%;
+          
+          airQualityDisplay.textContent = data.airQuality;
+          airQualityDisplay.className = text-3xl font-bold mt-1 ${data.airQuality === 'Good' ? 'text-green-500' : 'text-red-500'};
+
+          gasDisplay.textContent = data.gasType;
+          gasDisplay.className = text-3xl font-bold mt-1 ${data.gasType === 'None' ? 'text-green-500' : 'text-red-500'};
+          
+          // Animate the anomaly highlight if a defect is detected
+          if (data.defectDetected) {
+              anomalyHighlight.classList.add('animate-pulse', 'opacity-50');
+              anomalyHighlight.classList.remove('opacity-0');
+          } else {
+              anomalyHighlight.classList.remove('animate-pulse', 'opacity-50');
+              anomalyHighlight.classList.add('opacity-0');
+          }
+
+          // Update button states
+          openVentsButton.disabled = isVentOpen || isAutomaticVenting || data.gasType === 'None';
+          closeVentsButton.disabled = !isVentOpen || isAutomaticVenting;
+
+          // Update button styles
+          openVentsButton.classList.toggle('bg-red-500', !openVentsButton.disabled);
+          openVentsButton.classList.toggle('hover:bg-red-600', !openVentsButton.disabled);
+          openVentsButton.classList.toggle('bg-gray-400', openVentsButton.disabled);
+          openVentsButton.classList.toggle('cursor-not-allowed', openVentsButton.disabled);
+
+          closeVentsButton.classList.toggle('bg-green-500', !closeVentsButton.disabled);
+          closeVentsButton.classList.toggle('hover:bg-green-600', !closeVentsButton.disabled);
+          closeVentsButton.classList.toggle('bg-gray-400', closeVentsButton.disabled);
+          closeVentsButton.classList.toggle('cursor-not-allowed', closeVentsButton.disabled);
+        };
+
+        // Function to add a new alert notification to the container
+        const addNotification = (message, isError = false) => {
+          const alertDiv = document.createElement('div');
+          const colorClass = isError ? 'bg-red-100 border-red-500 text-red-700' : 'bg-green-100 border-green-500 text-green-700';
+          alertDiv.className = border-l-4 p-2 rounded-md text-sm ${colorClass};
+          alertDiv.textContent = message;
+          alertsContainer.prepend(alertDiv);
+          // Keep a maximum of 5 alerts visible
+          while (alertsContainer.children.length > 5) {
+            alertsContainer.lastChild.remove();
+          }
+        };
+
+        // Function to open the vents and start the clearing process
+        const openVents = () => {
+            if (isVentOpen) return;
+            isVentOpen = true;
+            addNotification('Vents opening. Gas levels are expected to drop.');
+            updateUI();
+            
+            // Start a timer to "clear" the gas after a delay
+            ventTimer = setTimeout(() => {
+                data.gasType = 'None';
+                data.airQuality = 'Good';
+                data.defectDetected = false;
+                isVentOpen = false;
+                addNotification('Vents closed. Gas levels are now clear.');
+                updateUI();
+            }, 5000); // Vents stay open for 5 seconds to clear the gas
+        };
+
+        // Function to close the vents
+        const closeVents = () => {
+            if (!isVentOpen) return;
+            clearTimeout(ventTimer);
+            isVentOpen = false;
+            addNotification('Vents closed manually.');
+            updateUI();
+        };
+
+        // Function to simulate real-time sensor data
+        const simulateSensorData = () => {
+          // Simulate slight fluctuations in temperature and humidity
+          const newTemp = 4.0 + (Math.random() * 2 - 1) * 0.5;
+          const newHumidity = 65 + (Math.random() * 2 - 1) * 2;
+          
+          let newGasType = data.gasType;
+          if (newGasType === 'None' && Math.random() > 0.97) { // 3% chance of detecting a new gas
+              const randomIndex = Math.floor(Math.random() * harmfulGases.length);
+              newGasType = harmfulGases[randomIndex];
+          }
+
+          const newAirQuality = newGasType !== 'None' ? 'Poor' : 'Good';
+          let newDefectDetected = false;
+          let newNotification = null;
+
+          // Check for environmental condition alerts
+          if (newTemp > 4.5 || newTemp < 3.5) {
+            newDefectDetected = true;
+            newNotification = 'ALERT: Temperature outside optimal range!';
+          } else if (newHumidity > 70) {
+            newDefectDetected = true;
+            newNotification = 'WARNING: Humidity is too high!';
+          } else if (newGasType !== 'None') {
+            newDefectDetected = true;
+            newNotification = ALERT: Harmful gas detected: ${newGasType}!;
+          }
+
+          // Update the main data object
+          data = {
+            temperature: parseFloat(newTemp.toFixed(1)),
+            humidity: parseFloat(newHumidity.toFixed(1)),
+            gasType: newGasType,
+            airQuality: newAirQuality,
+            defectDetected: newDefectDetected,
+          };
+
+          // Check for automatic venting
+          if (isAutomaticVenting && data.gasType !== 'None' && !isVentOpen) {
+              addNotification('Automatic venting system activated.', true);
+              openVents();
+          }
+
+          // Add a new notification if one was triggered
+          if (newNotification) {
+            addNotification(newNotification, true);
+          }
+          updateUI();
+        };
+
+        // Handle the "Connect" button click
+        const handleConnect = () => {
+          if (isConnected) return;
+          isConnected = true;
+          connectScreen.classList.add('hidden');
+          dashboard.classList.remove('hidden');
+          dashboard.classList.add('grid');
+          addNotification('Connected to Onion Storage Unit. Live data streaming...');
+          // Start the sensor data simulation loop
+          sensorInterval = setInterval(simulateSensorData, 3000);
+        };
+
+        // Add event listeners
+        connectButton.addEventListener('click', handleConnect);
+        openVentsButton.addEventListener('click', openVents);
+        closeVentsButton.addEventListener('click', closeVents);
+        
+        autoVentToggle.addEventListener('change', (event) => {
+            isAutomaticVenting = event.target.checked;
+            if (isAutomaticVenting) {
+                addNotification('Automatic venting is now ON.');
+            } else {
+                addNotification('Automatic venting is now OFF.');
+            }
+            updateUI();
+        });
+      }); // End of DOMContentLoaded event listener
+    </script>
+</body>
+</html>
